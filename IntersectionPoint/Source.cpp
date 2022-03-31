@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <array>
 
 template<class T>
 struct Point
@@ -12,45 +13,46 @@ struct Point
 using PointD = Point<double>;
 
 
-//метод, проверяющий пересекаются ли 2 отрезка [p1, p2] и [p3, p4]
+//метод, проверяющий пересекаются ли 2 отрезка [line1[0], line1[1]] и [line2[0], line2[1]]
 
-bool PointIntersection(PointD p1, PointD p2, PointD p3, PointD p4, PointD& outPoint)
+template<class T>
+bool PointIntersection(std::array<Point<T>, 2> line1, std::array<Point<T>, 2> line2, Point<T>& outPoint)
 {
-	//сначала расставим точки по порядку, т.е. чтобы было p1.x <= p2.x
+	//сначала расставим точки по порядку, т.е. чтобы было line1[0].x <= line1[1].x
 
-	if (p2.x < p1.x)
+	if (line1[1].x < line1[0].x)
 	{
-		PointD tmp = p1;
-		p1 = p2;
-		p2 = tmp;
+		auto tmp = line1[0];
+		line1[0] = line1[1];
+		line1[1] = tmp;
 	}
 
-	//и p3.x <= p4.x
+	//и line2[0].x <= line2[1].x
 
-	if (p4.x < p3.x)
+	if (line2[1].x < line2[0].x)
 	{
-		PointD tmp = p3;
-		p3 = p4;
-		p4 = tmp;
+		auto tmp = line2[0];
+		line2[0] = line2[1];
+		line2[1] = tmp;
 	}
 
 	//проверим существование потенциального интервала для точки пересечения отрезков
 
-	if (p2.x < p3.x)
+	if (line1[1].x < line2[0].x)
 		return false; //ибо у отрезков нету взаимной абсциссы
 
 	//если оба отрезка вертикальные
 
-	if ((p1.x - p2.x == 0) && (p3.x - p4.x == 0))
+	if ((line1[0].x - line1[1].x == 0) && (line2[0].x - line2[1].x == 0))
 	{
 		//если они лежат на одном X
-		if (p1.x == p3.x)
+		if (line1[0].x == line2[0].x)
 		{
 			//проверим пересекаются ли они, т.е. есть ли у них общий Y
 
 			//для этого возьмём отрицание от случая, когда они НЕ пересекаются
 
-			if (!((std::max(p1.y, p2.y) < std::min(p3.y, p4.y)) || (std::min(p1.y, p2.y) > std::max(p3.y, p4.y)))) return true;
+			if (!((std::max(line1[0].y, line1[1].y) < std::min(line2[0].y, line2[1].y)) || (std::min(line1[0].y, line1[1].y) > std::max(line2[0].y, line2[1].y)))) return true;
 
 		}
 		return false;
@@ -64,15 +66,15 @@ bool PointIntersection(PointD p1, PointD p2, PointD p3, PointD p4, PointD& outPo
 
 	//если первый отрезок вертикальный
 
-	if (p1.x - p2.x == 0)
+	if (line1[0].x - line1[1].x == 0)
 	{
 		//найдём Xa, Ya - точки пересечения двух прямых
-		double Xa = p1.x;
-		double A2 = (p3.y - p4.y) / (p3.x - p4.x);
-		double b2 = p3.y - A2 * p3.x;
-		double Ya = A2 * Xa + b2;
+		auto Xa = line1[0].x;
+		auto A2 = (line2[0].y - line2[1].y) / (line2[0].x - line2[1].x);
+		auto b2 = line2[0].y - A2 * line2[0].x;
+		auto Ya = A2 * Xa + b2;
 
-		if (p3.x <= Xa && p4.x >= Xa && std::min(p1.y, p2.y) <= Ya && std::max(p1.y, p2.y) >= Ya)
+		if (line2[0].x <= Xa && line2[1].x >= Xa && std::min(line1[0].y, line1[1].y) <= Ya && std::max(line1[0].y, line1[1].y) >= Ya)
 		{
 			outPoint.x = Xa;
 			outPoint.y = Ya;
@@ -84,15 +86,15 @@ bool PointIntersection(PointD p1, PointD p2, PointD p3, PointD p4, PointD& outPo
 
 	//если второй отрезок вертикальный
 
-	if (p3.x - p4.x == 0)
+	if (line2[0].x - line2[1].x == 0)
 	{
 		//найдём Xa, Ya - точки пересечения двух прямых
-		double Xa = p3.x;
-		double A1 = (p1.y - p2.y) / (p1.x - p2.x);
-		double b1 = p1.y - A1 * p1.x;
-		double Ya = A1 * Xa + b1;
+		auto Xa = line2[0].x;
+		auto A1 = (line1[0].y - line1[1].y) / (line1[0].x - line1[1].x);
+		auto b1 = line1[0].y - A1 * line1[0].x;
+		auto Ya = A1 * Xa + b1;
 
-		if (p1.x <= Xa && p2.x >= Xa && std::min(p3.y, p4.y) <= Ya && std::max(p3.y, p4.y) >= Ya)
+		if (line1[0].x <= Xa && line1[1].x >= Xa && std::min(line2[0].y, line2[1].y) <= Ya && std::max(line2[0].y, line2[1].y) >= Ya)
 		{
 			outPoint.x = Xa;
 			outPoint.y = Ya;
@@ -105,21 +107,21 @@ bool PointIntersection(PointD p1, PointD p2, PointD p3, PointD p4, PointD& outPo
 
 	//оба отрезка невертикальные
 
-	double A1 = (p1.y - p2.y) / (p1.x - p2.x);
-	double A2 = (p3.y - p4.y) / (p3.x - p4.x);
-	double b1 = p1.y - A1 * p1.x;
-	double b2 = p3.y - A2 * p3.x;
+	auto A1 = (line1[0].y - line1[1].y) / (line1[0].x - line1[1].x);
+	auto A2 = (line2[0].y - line2[1].y) / (line2[0].x - line2[1].x);
+	auto b1 = line1[0].y - A1 * line1[0].x;
+	auto b2 = line2[0].y - A2 * line2[0].x;
 
 	if (A1 == A2) return false; //отрезки параллельны
 
 	//Xa - абсцисса точки пересечения двух прямых
 
-	double Xa = (b2 - b1) / (A1 - A2);
-	double Ya = A1 * Xa + b1;
+	auto Xa = (b2 - b1) / (A1 - A2);
+	auto Ya = A1 * Xa + b1;
 
-	if ((Xa < std::max(p1.x, p3.x)) || (Xa > std::min(p2.x, p4.x)))
+	if ((Xa < std::max(line1[0].x, line2[0].x)) || (Xa > std::min(line1[1].x, line2[1].x)))
 		return false; //точка Xa находится вне пересечения проекций отрезков на ось X
-	else 
+	else
 	{
 		outPoint.x = Xa;
 		outPoint.y = Ya;
@@ -130,6 +132,8 @@ bool PointIntersection(PointD p1, PointD p2, PointD p3, PointD p4, PointD& outPo
 void main()
 {
 	PointD outputPoint(0, 0);
-	PointIntersection(PointD(0, 0), PointD(2, 2), PointD(2, 0), PointD(0, 2), outputPoint);
+	//PointIntersection(PointD(0, 2), PointD(2, 2), PointD(2, 0), PointD(0, 2), outputPoint);
+	//PointIntersection({ PointD(0, 2), PointD(2, 2) }, { PointD(2, 0), PointD(0, 2) }, outputPoint);
+	PointIntersection({ PointD(0, 0), PointD(2, 2) }, { PointD(2, 0), PointD(0, 2) }, outputPoint);
 	std::cout << (std::string)outputPoint;
 }
