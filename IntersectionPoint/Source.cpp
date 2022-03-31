@@ -14,7 +14,7 @@ using PointD = Point<double>;
 
 //метод, проверяющий пересекаются ли 2 отрезка [p1, p2] и [p3, p4]
 
-bool PointIntersection(PointD p1, PointD p2, PointD p3, PointD p4)
+bool PointIntersection(PointD p1, PointD p2, PointD p3, PointD p4, PointD& outPoint)
 {
 	//сначала расставим точки по порядку, т.е. чтобы было p1.x <= p2.x
 
@@ -72,7 +72,12 @@ bool PointIntersection(PointD p1, PointD p2, PointD p3, PointD p4)
 		double b2 = p3.y - A2 * p3.x;
 		double Ya = A2 * Xa + b2;
 
-		if (p3.x <= Xa && p4.x >= Xa && std::min(p1.y, p2.y) <= Ya && std::max(p1.y, p2.y) >= Ya) return true;
+		if (p3.x <= Xa && p4.x >= Xa && std::min(p1.y, p2.y) <= Ya && std::max(p1.y, p2.y) >= Ya)
+		{
+			outPoint.x = Xa;
+			outPoint.y = Ya;
+			return true;
+		}
 
 		return false;
 	}
@@ -87,7 +92,12 @@ bool PointIntersection(PointD p1, PointD p2, PointD p3, PointD p4)
 		double b1 = p1.y - A1 * p1.x;
 		double Ya = A1 * Xa + b1;
 
-		if (p1.x <= Xa && p2.x >= Xa && std::min(p3.y, p4.y) <= Ya && std::max(p3.y, p4.y) >= Ya) return true;
+		if (p1.x <= Xa && p2.x >= Xa && std::min(p3.y, p4.y) <= Ya && std::max(p3.y, p4.y) >= Ya)
+		{
+			outPoint.x = Xa;
+			outPoint.y = Ya;
+			return true;
+		}
 
 		return false;
 
@@ -105,14 +115,21 @@ bool PointIntersection(PointD p1, PointD p2, PointD p3, PointD p4)
 	//Xa - абсцисса точки пересечения двух прямых
 
 	double Xa = (b2 - b1) / (A1 - A2);
+	double Ya = A1 * Xa + b1;
 
 	if ((Xa < std::max(p1.x, p3.x)) || (Xa > std::min(p2.x, p4.x)))
 		return false; //точка Xa находится вне пересечения проекций отрезков на ось X
 	else 
+	{
+		outPoint.x = Xa;
+		outPoint.y = Ya;
 		return true;
+	}
 }
 
 void main()
 {
-
+	PointD outputPoint(0, 0);
+	PointIntersection(PointD(0, 0), PointD(2, 2), PointD(2, 0), PointD(0, 2), outputPoint);
+	std::cout << (std::string)outputPoint;
 }
